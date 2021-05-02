@@ -1,0 +1,27 @@
+name: Liquibase execution gcloud gcp
+on:
+  push: 
+    branches: [main]
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    steps: 
+     - uses: actions/checkout@v2
+     - uses: google-github-actions/setup-gcloud@master
+       with:
+         service_account_key: ${{ secrets.GCP_TOKEN }}
+         export_default_credentials: true
+     - run: |
+        docker-compose run --rm --workdir="/liquibase/changelog/" \
+          liquibase-runner \
+          --driver=org.postgresql.Driver \
+          --url=jdbc:postgresql://cloudproxy:5432/${DB_NAME} \
+          --changeLogFile=changelog.xml \
+          --username=postgres \
+          --password=${{ secrets.DB_PWD }} \
+          update
+       env:
+          DB_NAME: liquibase_db
+          DB_INSTANCE: "charming-mile-312518:us-central1:liqui-instance"
+          LIQUIBASE_SCRIPT_FOLDER: "${{ github.workspace }}/scripts"
+

@@ -1,0 +1,13 @@
+services:
+  cloudproxy:
+    image: gcr.io/cloudsql-docker/gce-proxy:1.20.2
+    entrypoint: [ "/cloud_sql_proxy", "-credential_file=/tmp/gcpproxy/key.json", "-instances=${DB_INSTANCE}=tcp:0.0.0.0:5432"]
+    volumes: 
+      - ${GOOGLE_APPLICATION_CREDENTIALS}:/tmp/gcpproxy/key.json
+  liquibase-runner:
+    image: liquibase/liquibase:4.3.2
+    depends_on:
+      - "cloudproxy"
+    volumes:
+      - ${LIQUIBASE_SCRIPT_FOLDER}:/liquibase/changelog
+    
